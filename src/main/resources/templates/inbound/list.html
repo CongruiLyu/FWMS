@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/base :: base('__${title}__', ~{::section}, ~{::script})}">
+<section>
+    <div class="card">
+        <div style="margin-bottom:16px;">
+            <button class="btn btn-primary" onclick="showModal('inboundModal')">办理入库</button>
+        </div>
+        <table>
+            <thead><tr><th>入库编号</th><th>供应商</th><th>原料</th><th>数量</th><th>库位</th><th>质检结果</th><th>入库时间</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div class="modal-overlay" id="inboundModal">
+        <div class="modal">
+            <h3>原料入库（验收→质检→入库）</h3>
+            <div class="form-group"><label>供应商</label><select id="supplierId" class="form-control"></select></div>
+            <div class="form-group"><label>原料</label><select id="materialId" class="form-control"></select></div>
+            <div class="form-group"><label>数量</label><input id="quantity" type="number" class="form-control"></div>
+            <div class="form-group"><label>入库库位(A区)</label><select id="locationId" class="form-control"></select></div>
+            <div class="form-group"><label>质检员</label><select id="inspectorId" class="form-control"></select></div>
+            <div class="form-group"><label>质检结果</label>
+                <select id="qcResult" class="form-control"><option value="PASS">合格</option><option value="FAIL">不合格(退货)</option></select>
+            </div>
+            <div class="form-group"><label>备注</label><input id="remark" class="form-control"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('inboundModal')">取消</button>
+                <button class="btn btn-primary" onclick="save()">确认入库</button>
+            </div>
+        </div>
+    </div>
+</section>
+<script th:fragment="script">
+async function loadOptions() {
+    const [suppliers, materials, locations, qcUsers] = await Promise.all([
+        apiGet('/api/suppliers'), apiGet('/api/materials'), apiGet('/api/locations?zone=A'), apiGet('/api/users/qc')
+    ]);
+    supplierId.innerHTML = (suppliers.data||[]).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    materialId.innerHTML = (materials.data||[]).map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    locationId.innerHTML = (locations.data||[]).map(l => `<option value="${l.id}">${l.code} ${l.name}</option>`).join('');
+    inspectorId.innerHTML = (qcUsers.data||[]).map(u => `<option value="${u.id}">${u.realName}</option>`).join('');
+}
+async function load() {
+    const res = await apiGet('/api/inbounds');
+    document.getElementById('tableBody').innerHTML = (res.data||[]).map(i =>
+        `<tr><td>${i.inboundNo}</td><td>${i.supplierName}</td><td>${i.materialName}</td><td>${i.quantity}</td>
+        <td>${i.locationCode||'-'}</td><td>${statusBadge(i.qcResult)}</td><td>${formatDateTime(i.inboundTime)}</td></tr>`).join('');
+}
+async function save() {
+    const res = await apiPost('/api/inbounds', {
+        supplierId: supplierId.value, materialId: materialId.value, quantity: quantity.value,
+        locationId: locationId.value, inspectorId: inspectorId.value, qcResult: qcResult.value, remark: remark.value
+    });
+    if (res.code === 200) { hideModal('inboundModal'); load(); toast('入库成功'); }
+    else toast(res.message, true);
+}
+loadOptions(); load();
+</script>
+</html>

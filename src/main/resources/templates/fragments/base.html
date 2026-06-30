@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="base(title, content, scripts)">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title} + ' - FWMS'">FWMS</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="sidebar">
+    <div class="logo"><h2>FWMS</h2><small>食品仓库管理系统</small></div>
+    <nav>
+        <a href="/dashboard">首页</a>
+        <div class="nav-group">基础数据</div>
+        <a href="/supplier" th:if="${user.role == 'ADMIN' or user.role == 'PURCHASER'}">供应商管理</a>
+        <a href="/material" th:if="${user.role == 'ADMIN' or user.role == 'WAREHOUSE'}">原料管理</a>
+        <a href="/location" th:if="${user.role == 'ADMIN' or user.role == 'WAREHOUSE'}">库位管理</a>
+        <div class="nav-group">采购入库</div>
+        <a href="/purchase" th:if="${user.role == 'ADMIN' or user.role == 'PURCHASER'}">采购管理</a>
+        <a href="/inbound" th:if="${user.role == 'ADMIN' or user.role == 'WAREHOUSE'}">原料入库</a>
+        <a href="/material-stock">原料库存</a>
+        <div class="nav-group">生产管理</div>
+        <a href="/requisition" th:if="${user.role == 'ADMIN' or user.role == 'PRODUCTION' or user.role == 'WAREHOUSE'}">生产领料</a>
+        <a href="/production" th:if="${user.role == 'ADMIN' or user.role == 'PRODUCTION'}">生产管理</a>
+        <a href="/qc" th:if="${user.role == 'ADMIN' or user.role == 'QC'}">质检管理</a>
+        <a href="/product-stock">成品库存</a>
+        <div class="nav-group">销售发货</div>
+        <a href="/customer" th:if="${user.role == 'ADMIN' or user.role == 'SALES'}">客户管理</a>
+        <a href="/sales" th:if="${user.role == 'ADMIN' or user.role == 'SALES'}">客户订单</a>
+        <a href="/shipment" th:if="${user.role == 'ADMIN' or user.role == 'WAREHOUSE'}">发货出库</a>
+    </nav>
+</div>
+<div class="main-content">
+    <div class="top-bar">
+        <h1 th:text="${title}">页面</h1>
+        <div class="user-info">
+            <span th:text="${user.realName}">用户</span>
+            <a href="/logout">退出</a>
+        </div>
+    </div>
+    <div th:replace="${content}"></div>
+</div>
+<script th:src="@{/js/app.js}"></script>
+<script th:replace="${scripts}"></script>
+</body>
+</html>

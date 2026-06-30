@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/base :: base('__${title}__', ~{::section}, ~{::script})}">
+<section>
+    <div class="card">
+        <div class="card-title">仓库库位布局（A原料→B车间→C成品→D发货）</div>
+        <table>
+            <thead><tr><th>库位编号</th><th>名称</th><th>区域</th><th>区域说明</th><th>容量</th><th>排序</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div class="card">
+        <div class="card-title">库位可视化</div>
+        <div id="locVisual" class="warehouse-visual"></div>
+    </div>
+</section>
+<script th:fragment="script">
+async function load() {
+    const res = await apiGet('/api/locations');
+    const zones = {A:'原料仓(离车间最近)', B:'生产车间', C:'成品仓(按交期排序)', D:'发货区'};
+    document.getElementById('tableBody').innerHTML = (res.data||[]).map(l =>
+        `<tr><td><strong>${l.code}</strong></td><td>${l.name}</td><td>${l.zone}</td><td>${zones[l.zone]||l.zoneName}</td><td>${l.capacity}</td><td>${l.sortOrder}</td></tr>`).join('');
+    let html = '';
+    ['A','B','C','D'].forEach(z => {
+        html += `<div class="zone-block zone-${z}"><div class="zone-title">${zones[z]}</div>`;
+        (res.data||[]).filter(l => l.zone === z).forEach(l => {
+            html += `<div class="location-bar"><span class="loc-code">${l.code}</span><div class="bar-bg"><div class="bar-fill bar-mid" style="width:60%"></div></div><span class="loc-info">${l.name}</span></div>`;
+        });
+        html += '</div>';
+    });
+    document.getElementById('locVisual').innerHTML = html;
+}
+load();
+</script>
+</html>

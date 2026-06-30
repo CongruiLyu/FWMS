@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/base :: base('__${title}__', ~{::section}, ~{::script})}">
+<section>
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+            <input type="text" id="keyword" class="form-control" style="width:200px;" placeholder="搜索供应商">
+            <button class="btn btn-primary" onclick="showModal('addModal')">新增供应商</button>
+        </div>
+        <table>
+            <thead><tr><th>编号</th><th>名称</th><th>联系人</th><th>电话</th><th>地址</th><th>操作</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h3>新增供应商</h3>
+            <div class="form-group"><label>编号</label><input id="code" class="form-control"></div>
+            <div class="form-group"><label>名称</label><input id="name" class="form-control"></div>
+            <div class="form-group"><label>联系人</label><input id="contact" class="form-control"></div>
+            <div class="form-group"><label>电话</label><input id="phone" class="form-control"></div>
+            <div class="form-group"><label>地址</label><input id="address" class="form-control"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('addModal')">取消</button>
+                <button class="btn btn-primary" onclick="save()">保存</button>
+            </div>
+        </div>
+    </div>
+</section>
+<script th:fragment="script">
+async function load() {
+    const res = await apiGet('/api/suppliers?keyword=' + encodeURIComponent(document.getElementById('keyword').value));
+    document.getElementById('tableBody').innerHTML = (res.data||[]).map(s =>
+        `<tr><td>${s.code}</td><td>${s.name}</td><td>${s.contact||'-'}</td><td>${s.phone||'-'}</td><td>${s.address||'-'}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="del(${s.id})">删除</button></td></tr>`).join('');
+}
+async function save() {
+    const res = await apiPost('/api/suppliers', { code: code.value, name: name.value, contact: contact.value, phone: phone.value, address: address.value });
+    if (res.code === 200) { hideModal('addModal'); load(); } else toast(res.message, true);
+}
+async function del(id) { if(confirm('确认删除?')) { await apiDelete('/api/suppliers/'+id); load(); } }
+document.getElementById('keyword').addEventListener('input', load);
+load();
+</script>
+</html>

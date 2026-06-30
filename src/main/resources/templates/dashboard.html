@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>首页 - FWMS</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="sidebar">
+    <div class="logo"><h2>FWMS</h2><small>食品仓库管理系统</small></div>
+    <nav>
+        <a href="/dashboard" class="active">首页</a>
+        <div class="nav-group">基础数据</div>
+        <a href="/supplier" th:if="${user.role == 'ADMIN' or user.role == 'PURCHASER'}">供应商管理</a>
+        <a href="/material" th:if="${user.role == 'ADMIN' or user.role == 'WAREHOUSE'}">原料管理</a>
+        <a href="/location" th:if="${user.role == 'ADMIN' or user.role == 'WAREHOUSE'}">库位管理</a>
+        <div class="nav-group">采购入库</div>
+        <a href="/purchase" th:if="${user.role == 'ADMIN' or user.role == 'PURCHASER'}">采购管理</a>
+        <a href="/inbound" th:if="${user.role == 'ADMIN' or user.role == 'WAREHOUSE'}">原料入库</a>
+        <a href="/material-stock">原料库存</a>
+        <div class="nav-group">生产管理</div>
+        <a href="/requisition" th:if="${user.role == 'ADMIN' or user.role == 'PRODUCTION' or user.role == 'WAREHOUSE'}">生产领料</a>
+        <a href="/production" th:if="${user.role == 'ADMIN' or user.role == 'PRODUCTION'}">生产管理</a>
+        <a href="/qc" th:if="${user.role == 'ADMIN' or user.role == 'QC'}">质检管理</a>
+        <a href="/product-stock">成品库存</a>
+        <div class="nav-group">销售发货</div>
+        <a href="/customer" th:if="${user.role == 'ADMIN' or user.role == 'SALES'}">客户管理</a>
+        <a href="/sales" th:if="${user.role == 'ADMIN' or user.role == 'SALES'}">客户订单</a>
+        <a href="/shipment" th:if="${user.role == 'ADMIN' or user.role == 'WAREHOUSE'}">发货出库</a>
+    </nav>
+</div>
+<div class="main-content">
+    <div class="top-bar">
+        <h1>首页</h1>
+        <div class="user-info">
+            <span th:text="${user.realName} + ' (' + ${roleLabel} + ')'"></span>
+            <a href="/logout">退出</a>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="num" th:text="${pendingPurchases}">0</div>
+            <div class="label">待处理采购单</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" th:text="${pendingSales}">0</div>
+            <div class="label">待发货订单</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" th:text="${todayInbound}">0</div>
+            <div class="label">今日入库</div>
+        </div>
+        <div class="stat-card" th:classappend="${alerts != null and !alerts.isEmpty()} ? 'warning' : ''">
+            <div class="num" th:text="${alerts != null ? alerts.size() : 0}">0</div>
+            <div class="label">库存预警</div>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <!-- 库存预警 -->
+        <div class="card">
+            <div class="card-title">库存预警</div>
+            <ul class="alert-list" th:if="${alerts != null and !alerts.isEmpty()}">
+                <li th:each="a : ${alerts}" th:text="${a.message}">预警信息</li>
+            </ul>
+            <p th:if="${alerts == null or alerts.isEmpty()}" style="color:#888;">暂无库存预警</p>
+        </div>
+
+        <!-- 原料库存概览 -->
+        <div class="card">
+            <div class="card-title">原料库存概览</div>
+            <table>
+                <thead><tr><th>原料</th><th>库存</th><th>库位</th><th>状态</th></tr></thead>
+                <tbody>
+                <tr th:each="s : ${materialStocks}">
+                    <td th:text="${s.materialName}"></td>
+                    <td th:text="${s.quantity} + ${s.unit}" th:classappend="${s.alert} ? 'text-danger' : ''"></td>
+                    <td th:text="${s.locationCode}"></td>
+                    <td><span th:if="${s.alert}" class="badge badge-danger">库存不足</span>
+                        <span th:unless="${s.alert}" class="badge badge-success">正常</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 可视化仓库 -->
+    <div class="card">
+        <div class="card-title">可视化仓库布局</div>
+        <div class="warehouse-visual" id="warehouseVisual"></div>
+    </div>
+</div>
+<script th:inline="javascript">
+    const warehouseData = /*[[${warehouseVisual}]]*/ [];
+    const zones = [
+        {code:'A', name:'原料仓(A区-离车间最近)'},
+        {code:'B', name:'生产车间(B区)'},
+        {code:'C', name:'成品仓(C区-按交期排序)'},
+        {code:'D', name:'发货区(D区)'}
+    ];
+    let html = '';
+    zones.forEach(z => {
+        html += '<div class="zone-block zone-' + z.code + '"><div class="zone-title">' + z.name + '</div>';
+        warehouseData.filter(l => l.zone === z.code).forEach(loc => {
+            const pct = loc.fillPercent || 0;
+            const cls = pct <= 30 ? 'bar-low' : (pct <= 70 ? 'bar-mid' : 'bar-high');
+            const info = loc.itemName ? loc.itemName + ' ' + loc.quantity : '空闲';
+            html += '<div class="location-bar"><span class="loc-code">' + loc.code + '</span>'
+                + '<div class="bar-bg"><div class="bar-fill ' + cls + '" style="width:' + pct + '%"></div></div>'
+                + '<span class="loc-info">' + info + '</span></div>';
+        });
+        html += '</div>';
+    });
+    document.getElementById('warehouseVisual').innerHTML = html;
+</script>
+</body>
+</html>

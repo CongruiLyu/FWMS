@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/base :: base('__${title}__', ~{::section}, ~{::script})}">
+<section>
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+            <select id="statusFilter" class="form-control" style="width:150px;">
+                <option value="">全部</option><option value="PENDING">待审核</option><option value="COMPLETED">已发料</option>
+            </select>
+            <button class="btn btn-primary" onclick="showModal('reqModal')">申请领料</button>
+        </div>
+        <table>
+            <thead><tr><th>领料单号</th><th>车间</th><th>原料</th><th>数量</th><th>申请人</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div class="modal-overlay" id="reqModal">
+        <div class="modal">
+            <h3>生产领料申请</h3>
+            <div class="form-group"><label>生产车间</label><select id="workshop" class="form-control"><option>B01 生产线1</option><option>B02 生产线2</option></select></div>
+            <div class="form-group"><label>原料</label><select id="materialId" class="form-control"></select></div>
+            <div class="form-group"><label>数量</label><input id="quantity" type="number" class="form-control"></div>
+            <div class="form-group"><label>备注</label><input id="remark" class="form-control"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('reqModal')">取消</button>
+                <button class="btn btn-primary" onclick="createReq()">提交申请</button>
+            </div>
+        </div>
+    </div>
+</section>
+<script th:fragment="script">
+const userRole = '[[${user.role}]]';
+async function loadOptions() {
+    const res = await apiGet('/api/materials');
+    materialId.innerHTML = (res.data||[]).map(m => `<option value="${m.id}">${m.name}(${m.unit})</option>`).join('');
+}
+async function load() {
+    const res = await apiGet('/api/requisitions?status=' + statusFilter.value);
+    document.getElementById('tableBody').innerHTML = (res.data||[]).map(o => {
+        let actions = '';
+        if (o.status === 'PENDING' && (userRole === 'WAREHOUSE' || userRole === 'ADMIN')) {
+            actions = `<button class="btn btn-sm btn-primary" onclick="approve(${o.id},true)">审核发料</button>
+            <button class="btn btn-sm btn-danger" onclick="approve(${o.id},false)">拒绝</button>`;
+        }
+        return `<tr><td>${o.outboundNo}</td><td>${o.workshop}</td><td>${o.materialName}</td><td>${o.quantity} ${o.unit||''}</td>
+        <td>${o.applicantName||'-'}</td><td>${statusBadge(o.status)}</td><td>${actions}</td></tr>`;
+    }).join('');
+}
+async function createReq() {
+    const res = await apiPost('/api/requisitions', { workshop: workshop.value, materialId: materialId.value, quantity: quantity.value, remark: remark.value });
+    if (res.code === 200) { hideModal('reqModal'); load(); toast('申请已提交'); } else toast(res.message, true);
+}
+async function approve(id, approved) {
+    const res = await apiPut('/api/requisitions/'+id+'/approve', { approved });
+    if (res.code === 200) load(); else toast(res.message, true);
+}
+statusFilter.addEventListener('change', load);
+loadOptions(); load();
+</script>
+</html>

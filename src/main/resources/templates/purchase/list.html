@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/base :: base('__${title}__', ~{::section}, ~{::script})}">
+<section>
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+            <select id="statusFilter" class="form-control" style="width:150px;">
+                <option value="">全部状态</option>
+                <option value="PENDING">待处理</option>
+                <option value="ARRIVED">已到货</option>
+                <option value="COMPLETED">已完成</option>
+            </select>
+            <button class="btn btn-primary" onclick="showModal('addModal')">新建采购单</button>
+        </div>
+        <table>
+            <thead><tr><th>采购单号</th><th>供应商</th><th>采购日期</th><th>预计到货</th><th>金额</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div class="modal-overlay" id="addModal">
+        <div class="modal" style="width:600px;">
+            <h3>新建采购单</h3>
+            <div class="form-group"><label>供应商</label><select id="supplierId" class="form-control"></select></div>
+            <div class="form-group"><label>采购日期</label><input id="purchaseDate" type="date" class="form-control"></div>
+            <div class="form-group"><label>预计到货</label><input id="expectedDate" type="date" class="form-control"></div>
+            <div class="form-group"><label>原料</label><select id="materialId" class="form-control"></select></div>
+            <div class="form-group"><label>数量</label><input id="quantity" type="number" class="form-control"></div>
+            <div class="form-group"><label>单价</label><input id="unitPrice" type="number" step="0.01" class="form-control"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('addModal')">取消</button>
+                <button class="btn btn-primary" onclick="save()">保存</button>
+            </div>
+        </div>
+    </div>
+</section>
+<script th:fragment="script">
+async function loadOptions() {
+    const [suppliers, materials] = await Promise.all([apiGet('/api/suppliers'), apiGet('/api/materials')]);
+    supplierId.innerHTML = (suppliers.data||[]).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    materialId.innerHTML = (materials.data||[]).map(m => `<option value="${m.id}">${m.name}(${m.code})</option>`).join('');
+    purchaseDate.value = new Date().toISOString().substring(0,10);
+}
+async function load() {
+    const res = await apiGet('/api/purchases?status=' + statusFilter.value);
+    document.getElementById('tableBody').innerHTML = (res.data||[]).map(o => {
+        let actions = '';
+        if (o.status === 'PENDING') actions = `<button class="btn btn-sm btn-info" onclick="markArrived(${o.id})">标记到货</button>`;
+        return `<tr><td>${o.orderNo}</td><td>${o.supplierName}</td><td>${formatDate(o.purchaseDate)}</td>
+        <td>${formatDate(o.expectedDate)}</td><td>${o.totalAmount||0}</td><td>${statusBadge(o.status)}</td><td>${actions}</td></tr>`;
+    }).join('');
+}
+async function save() {
+    const res = await apiPost('/api/purchases', {
+        supplierId: supplierId.value, purchaseDate: purchaseDate.value, expectedDate: expectedDate.value,
+        items: [{ materialId: materialId.value, quantity: quantity.value, unitPrice: unitPrice.value || 0 }]
+    });
+    if (res.code === 200) { hideModal('addModal'); load(); } else toast(res.message, true);
+}
+async function markArrived(id) { await apiPut('/api/purchases/'+id+'/arrived'); load(); }
+statusFilter.addEventListener('change', load);
+loadOptions(); load();
+</script>
+</html>

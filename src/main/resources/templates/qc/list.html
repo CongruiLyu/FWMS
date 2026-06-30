@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/base :: base('__${title}__', ~{::section}, ~{::script})}">
+<section>
+    <div class="card">
+        <div style="margin-bottom:16px;">
+            <select id="typeFilter" class="form-control" style="width:150px;">
+                <option value="">全部类型</option><option value="MATERIAL">原料质检</option><option value="PRODUCT">成品质检</option>
+            </select>
+        </div>
+        <table>
+            <thead><tr><th>质检编号</th><th>类型</th><th>物料/产品</th><th>数量</th><th>结果</th><th>检测人</th><th>检测时间</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div class="card" style="margin-top:20px;">
+        <div class="card-title">待质检生产批次</div>
+        <table>
+            <thead><tr><th>批次号</th><th>产品</th><th>数量</th><th>操作</th></tr></thead>
+            <tbody id="pendingBody"></tbody>
+        </table>
+    </div>
+    <div class="modal-overlay" id="qcModal">
+        <div class="modal">
+            <h3>成品质检</h3>
+            <input type="hidden" id="qcProdId">
+            <div class="form-group"><label>质检结果</label>
+                <select id="qcResult" class="form-control">
+                    <option value="PASS">合格→入成品仓</option>
+                    <option value="FAIL">不合格</option>
+                    <option value="REWORK">返工</option>
+                </select>
+            </div>
+            <div class="form-group"><label>备注</label><input id="qcRemark" class="form-control"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('qcModal')">取消</button>
+                <button class="btn btn-primary" onclick="doQc()">提交</button>
+            </div>
+        </div>
+    </div>
+</section>
+<script th:fragment="script">
+async function load() {
+    const res = await apiGet('/api/quality-inspections?type=' + typeFilter.value);
+    document.getElementById('tableBody').innerHTML = (res.data||[]).map(q =>
+        `<tr><td>${q.inspectionNo}</td><td>${q.type==='MATERIAL'?'原料':'成品'}</td>
+        <td>${q.materialName||q.productName||'-'}</td><td>${q.quantity}</td><td>${statusBadge(q.result)}</td>
+        <td>${q.inspectorName||'-'}</td><td>${formatDateTime(q.inspectTime)}</td></tr>`).join('');
+    const pending = await apiGet('/api/productions?status=QC_PENDING');
+    document.getElementById('pendingBody').innerHTML = (pending.data||[]).map(p =>
+        `<tr><td>${p.batchNo}</td><td>${p.productName}</td><td>${p.quantity}</td>
+        <td><button class="btn btn-sm btn-primary" onclick="openQc(${p.id})">质检</button></td></tr>`).join('');
+}
+function openQc(id) { qcProdId.value = id; showModal('qcModal'); }
+async function doQc() {
+    const res = await apiPost('/api/productions/'+qcProdId.value+'/qc', { result: qcResult.value, remark: qcRemark.value });
+    if (res.code === 200) { hideModal('qcModal'); load(); toast('质检完成'); }
+}
+typeFilter.addEventListener('change', load);
+load();
+</script>
+</html>

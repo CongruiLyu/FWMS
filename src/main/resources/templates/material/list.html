@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/base :: base('__${title}__', ~{::section}, ~{::script})}">
+<section>
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+            <input type="text" id="keyword" class="form-control" style="width:200px;" placeholder="搜索原料">
+            <button class="btn btn-primary" onclick="showModal('addModal')">新增原料</button>
+        </div>
+        <table>
+            <thead><tr><th>编号</th><th>名称</th><th>规格</th><th>单位</th><th>预警阈值</th><th>操作</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h3>新增原料</h3>
+            <div class="form-group"><label>编号</label><input id="code" class="form-control" placeholder="RM001"></div>
+            <div class="form-group"><label>名称</label><input id="name" class="form-control"></div>
+            <div class="form-group"><label>规格</label><input id="spec" class="form-control" placeholder="25kg/袋"></div>
+            <div class="form-group"><label>单位</label><input id="unit" class="form-control" placeholder="袋"></div>
+            <div class="form-group"><label>预警阈值</label><input id="alertThreshold" class="form-control" type="number" value="20"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideModal('addModal')">取消</button>
+                <button class="btn btn-primary" onclick="save()">保存</button>
+            </div>
+        </div>
+    </div>
+</section>
+<script th:fragment="script">
+async function load() {
+    const res = await apiGet('/api/materials?keyword=' + encodeURIComponent(document.getElementById('keyword').value));
+    document.getElementById('tableBody').innerHTML = (res.data||[]).map(m =>
+        `<tr><td>${m.code}</td><td>${m.name}</td><td>${m.spec||'-'}</td><td>${m.unit}</td><td>${m.alertThreshold}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="del(${m.id})">删除</button></td></tr>`).join('');
+}
+async function save() {
+    const res = await apiPost('/api/materials', {
+        code: code.value, name: name.value, spec: spec.value, unit: unit.value,
+        alertThreshold: parseInt(alertThreshold.value)
+    });
+    if (res.code === 200) { hideModal('addModal'); load(); } else toast(res.message, true);
+}
+async function del(id) { if(confirm('确认删除?')) { await apiDelete('/api/materials/'+id); load(); } }
+document.getElementById('keyword').addEventListener('input', load);
+load();
+</script>
+</html>
