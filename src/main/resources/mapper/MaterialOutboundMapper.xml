@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.MaterialOutboundMapper">
+    <select id="findAll" resultType="MaterialOutbound">
+        SELECT mo.*, m.name AS material_name, m.unit, u1.real_name AS applicant_name, u2.real_name AS approver_name
+        FROM material_outbound mo
+        LEFT JOIN material m ON mo.material_id = m.id
+        LEFT JOIN user u1 ON mo.applicant_id = u1.id
+        LEFT JOIN user u2 ON mo.approver_id = u2.id
+        <if test="status != null and status != ''">WHERE mo.status = #{status}</if>
+        ORDER BY mo.create_time DESC
+    </select>
+    <select id="findById" resultType="MaterialOutbound">
+        SELECT mo.*, m.name AS material_name, m.unit
+        FROM material_outbound mo
+        LEFT JOIN material m ON mo.material_id = m.id
+        WHERE mo.id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO material_outbound (outbound_no, workshop, applicant_id, material_id, quantity, status, remark)
+        VALUES (#{outboundNo}, #{workshop}, #{applicantId}, #{materialId}, #{quantity}, #{status}, #{remark})
+    </insert>
+    <update id="updateStatus">
+        UPDATE material_outbound SET status = #{status}, approver_id = #{approverId},
+        outbound_time = CASE WHEN #{status} = 'COMPLETED' THEN NOW() ELSE outbound_time END
+        WHERE id = #{id}
+    </update>
+</mapper>

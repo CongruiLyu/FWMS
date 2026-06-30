@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.ProductStockMapper">
+    <select id="findAll" resultType="ProductStock">
+        SELECT ps.*, p.name AS product_name, p.code AS product_code, p.unit, p.alert_threshold,
+               wl.code AS location_code,
+               CASE WHEN ps.quantity &lt;= p.alert_threshold THEN 1 ELSE 0 END AS alert
+        FROM product_stock ps
+        JOIN product p ON ps.product_id = p.id
+        LEFT JOIN warehouse_location wl ON ps.location_id = wl.id
+        ORDER BY ps.delivery_date ASC, ps.id
+    </select>
+    <select id="findByProductAndLocation" resultType="ProductStock">
+        SELECT * FROM product_stock WHERE product_id = #{productId} AND location_id = #{locationId} LIMIT 1
+    </select>
+    <select id="getTotalQuantity" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(quantity), 0) FROM product_stock WHERE product_id = #{productId}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product_stock (product_id, location_id, quantity, production_date, expiry_date, delivery_date, last_inbound_time)
+        VALUES (#{productId}, #{locationId}, #{quantity}, #{productionDate}, #{expiryDate}, #{deliveryDate}, #{lastInboundTime})
+    </insert>
+    <update id="increaseStock">
+        UPDATE product_stock SET quantity = quantity + #{quantity}, last_inbound_time = NOW(), update_time = NOW()
+        WHERE product_id = #{productId} AND location_id = #{locationId}
+    </update>
+    <update id="decreaseStock">
+        UPDATE product_stock SET quantity = quantity - #{quantity}, update_time = NOW()
+        WHERE product_id = #{productId} AND quantity >= #{quantity}
+        ORDER BY delivery_date ASC LIMIT 1
+    </update>
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.CustomerMapper">
+    <select id="findAll" resultType="Customer">
+        SELECT * FROM customer WHERE status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%',#{keyword},'%') OR code LIKE CONCAT('%',#{keyword},'%'))
+        </if>
+        ORDER BY id
+    </select>
+    <select id="findById" resultType="Customer">
+        SELECT * FROM customer WHERE id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO customer (code, name, contact, phone, address, status)
+        VALUES (#{code}, #{name}, #{contact}, #{phone}, #{address}, #{status})
+    </insert>
+    <update id="update">
+        UPDATE customer SET code=#{code}, name=#{name}, contact=#{contact}, phone=#{phone}, address=#{address}
+        WHERE id=#{id}
+    </update>
+    <delete id="deleteById">
+        UPDATE customer SET status = 0 WHERE id = #{id}
+    </delete>
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.ShipmentMapper">
+    <select id="findAll" resultType="Shipment">
+        SELECT sh.*, p.name AS product_name, wl.code AS location_code, u.real_name AS operator_name,
+               so.order_no, c.name AS customer_name
+        FROM shipment sh
+        LEFT JOIN product p ON sh.product_id = p.id
+        LEFT JOIN warehouse_location wl ON sh.location_id = wl.id
+        LEFT JOIN user u ON sh.operator_id = u.id
+        LEFT JOIN sales_order so ON sh.sales_order_id = so.id
+        LEFT JOIN customer c ON so.customer_id = c.id
+        ORDER BY sh.shipment_time DESC
+    </select>
+    <select id="findById" resultType="Shipment">
+        SELECT * FROM shipment WHERE id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO shipment (shipment_no, sales_order_id, product_id, quantity, location_id, operator_id, remark)
+        VALUES (#{shipmentNo}, #{salesOrderId}, #{productId}, #{quantity}, #{locationId}, #{operatorId}, #{remark})
+    </insert>
+</mapper>

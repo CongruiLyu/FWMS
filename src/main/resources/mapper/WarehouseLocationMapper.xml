@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.WarehouseLocationMapper">
+    <select id="findAll" resultType="WarehouseLocation">
+        SELECT * FROM warehouse_location WHERE status = 1 ORDER BY zone, sort_order
+    </select>
+    <select id="findByZone" resultType="WarehouseLocation">
+        SELECT * FROM warehouse_location WHERE zone = #{zone} AND status = 1 ORDER BY sort_order
+    </select>
+    <select id="findById" resultType="WarehouseLocation">
+        SELECT * FROM warehouse_location WHERE id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO warehouse_location (code, name, zone, zone_name, capacity, sort_order, status)
+        VALUES (#{code}, #{name}, #{zone}, #{zoneName}, #{capacity}, #{sortOrder}, #{status})
+    </insert>
+    <update id="update">
+        UPDATE warehouse_location SET code=#{code}, name=#{name}, zone=#{zone}, zone_name=#{zoneName},
+        capacity=#{capacity}, sort_order=#{sortOrder} WHERE id=#{id}
+    </update>
+    <delete id="deleteById">
+        UPDATE warehouse_location SET status = 0 WHERE id = #{id}
+    </delete>
+</mapper>

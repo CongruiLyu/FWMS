@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.UserMapper">
+    <select id="findByUsername" resultType="User">
+        SELECT * FROM user WHERE username = #{username} AND status = 1
+    </select>
+    <select id="findById" resultType="User">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+    <select id="findAll" resultType="User">
+        SELECT * FROM user ORDER BY id
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, real_name, role, phone, status)
+        VALUES (#{username}, #{password}, #{realName}, #{role}, #{phone}, #{status})
+    </insert>
+    <update id="update">
+        UPDATE user SET real_name=#{realName}, role=#{role}, phone=#{phone}, status=#{status}
+        <if test="password != null and password != ''">, password=#{password}</if>
+        WHERE id=#{id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM user WHERE id = #{id}
+    </delete>
+</mapper>

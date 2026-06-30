@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.SalesOrderMapper">
+    <select id="findAll" resultType="SalesOrder">
+        SELECT so.*, c.name AS customer_name, p.name AS product_name, p.unit, u.real_name AS salesperson_name
+        FROM sales_order so
+        LEFT JOIN customer c ON so.customer_id = c.id
+        LEFT JOIN product p ON so.product_id = p.id
+        LEFT JOIN user u ON so.salesperson_id = u.id
+        <if test="status != null and status != ''">WHERE so.status = #{status}</if>
+        ORDER BY so.delivery_date ASC, so.create_time DESC
+    </select>
+    <select id="findById" resultType="SalesOrder">
+        SELECT so.*, c.name AS customer_name, p.name AS product_name, p.unit
+        FROM sales_order so
+        LEFT JOIN customer c ON so.customer_id = c.id
+        LEFT JOIN product p ON so.product_id = p.id
+        WHERE so.id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sales_order (order_no, customer_id, product_id, quantity, delivery_date, status, salesperson_id, remark)
+        VALUES (#{orderNo}, #{customerId}, #{productId}, #{quantity}, #{deliveryDate}, #{status}, #{salespersonId}, #{remark})
+    </insert>
+    <update id="updateStatus">
+        UPDATE sales_order SET status = #{status} WHERE id = #{id}
+    </update>
+</mapper>

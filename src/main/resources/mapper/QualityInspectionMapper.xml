@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.QualityInspectionMapper">
+    <select id="findAll" resultType="QualityInspection">
+        SELECT qi.*, m.name AS material_name, p.name AS product_name, u.real_name AS inspector_name
+        FROM quality_inspection qi
+        LEFT JOIN material m ON qi.material_id = m.id
+        LEFT JOIN product p ON qi.product_id = p.id
+        LEFT JOIN user u ON qi.inspector_id = u.id
+        <if test="type != null and type != ''">WHERE qi.type = #{type}</if>
+        ORDER BY qi.inspect_time DESC
+    </select>
+    <select id="findById" resultType="QualityInspection">
+        SELECT * FROM quality_inspection WHERE id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO quality_inspection (inspection_no, type, ref_id, material_id, product_id, quantity, result, inspector_id, remark)
+        VALUES (#{inspectionNo}, #{type}, #{refId}, #{materialId}, #{productId}, #{quantity}, #{result}, #{inspectorId}, #{remark})
+    </insert>
+</mapper>

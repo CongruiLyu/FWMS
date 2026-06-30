@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.MaterialInboundMapper">
+    <select id="findAll" resultType="MaterialInbound">
+        SELECT mi.*, s.name AS supplier_name, m.name AS material_name, wl.code AS location_code, u.real_name AS inspector_name
+        FROM material_inbound mi
+        LEFT JOIN supplier s ON mi.supplier_id = s.id
+        LEFT JOIN material m ON mi.material_id = m.id
+        LEFT JOIN warehouse_location wl ON mi.location_id = wl.id
+        LEFT JOIN user u ON mi.qc_inspector_id = u.id
+        ORDER BY mi.inbound_time DESC
+    </select>
+    <select id="findById" resultType="MaterialInbound">
+        SELECT mi.*, s.name AS supplier_name, m.name AS material_name
+        FROM material_inbound mi
+        LEFT JOIN supplier s ON mi.supplier_id = s.id
+        LEFT JOIN material m ON mi.material_id = m.id
+        WHERE mi.id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO material_inbound (inbound_no, purchase_order_id, supplier_id, material_id, quantity, location_id,
+            qc_result, qc_inspector_id, operator_id, remark)
+        VALUES (#{inboundNo}, #{purchaseOrderId}, #{supplierId}, #{materialId}, #{quantity}, #{locationId},
+            #{qcResult}, #{qcInspectorId}, #{operatorId}, #{remark})
+    </insert>
+</mapper>

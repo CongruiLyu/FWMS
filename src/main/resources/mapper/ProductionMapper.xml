@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.ProductionMapper">
+    <select id="findAll" resultType="Production">
+        SELECT pr.*, p.name AS product_name, p.unit, u.real_name AS leader_name
+        FROM production pr
+        LEFT JOIN product p ON pr.product_id = p.id
+        LEFT JOIN user u ON pr.leader_id = u.id
+        <if test="status != null and status != ''">WHERE pr.status = #{status}</if>
+        ORDER BY pr.create_time DESC
+    </select>
+    <select id="findById" resultType="Production">
+        SELECT pr.*, p.name AS product_name, p.unit
+        FROM production pr LEFT JOIN product p ON pr.product_id = p.id WHERE pr.id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO production (batch_no, product_id, quantity, production_date, leader_id, status)
+        VALUES (#{batchNo}, #{productId}, #{quantity}, #{productionDate}, #{leaderId}, #{status})
+    </insert>
+    <update id="updateStatus">
+        UPDATE production SET status = #{status} WHERE id = #{id}
+    </update>
+</mapper>

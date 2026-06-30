@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.PurchaseOrderMapper">
+    <select id="findAll" resultType="PurchaseOrder">
+        SELECT po.*, s.name AS supplier_name, u.real_name AS purchaser_name
+        FROM purchase_order po
+        LEFT JOIN supplier s ON po.supplier_id = s.id
+        LEFT JOIN user u ON po.purchaser_id = u.id
+        <if test="status != null and status != ''">WHERE po.status = #{status}</if>
+        ORDER BY po.create_time DESC
+    </select>
+    <select id="findById" resultType="PurchaseOrder">
+        SELECT po.*, s.name AS supplier_name, u.real_name AS purchaser_name
+        FROM purchase_order po
+        LEFT JOIN supplier s ON po.supplier_id = s.id
+        LEFT JOIN user u ON po.purchaser_id = u.id
+        WHERE po.id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO purchase_order (order_no, supplier_id, purchase_date, expected_date, total_amount, status, purchaser_id, remark)
+        VALUES (#{orderNo}, #{supplierId}, #{purchaseDate}, #{expectedDate}, #{totalAmount}, #{status}, #{purchaserId}, #{remark})
+    </insert>
+    <update id="updateStatus">
+        UPDATE purchase_order SET status = #{status} WHERE id = #{id}
+    </update>
+    <insert id="insertItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO purchase_order_item (order_id, material_id, quantity, unit_price)
+        VALUES (#{orderId}, #{materialId}, #{quantity}, #{unitPrice})
+    </insert>
+    <select id="findItemsByOrderId" resultType="PurchaseOrderItem">
+        SELECT poi.*, m.name AS material_name, m.code AS material_code, m.unit
+        FROM purchase_order_item poi
+        JOIN material m ON poi.material_id = m.id
+        WHERE poi.order_id = #{orderId}
+    </select>
+</mapper>

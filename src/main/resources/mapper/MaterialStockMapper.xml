@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.MaterialStockMapper">
+    <select id="findAll" resultType="MaterialStock">
+        SELECT ms.*, m.name AS material_name, m.code AS material_code, m.unit, m.alert_threshold,
+               wl.code AS location_code,
+               CASE WHEN ms.quantity &lt;= m.alert_threshold THEN 1 ELSE 0 END AS alert
+        FROM material_stock ms
+        JOIN material m ON ms.material_id = m.id
+        LEFT JOIN warehouse_location wl ON ms.location_id = wl.id
+        ORDER BY ms.id
+    </select>
+    <select id="findByMaterialAndLocation" resultType="MaterialStock">
+        SELECT * FROM material_stock WHERE material_id = #{materialId}
+        <if test="locationId != null">AND location_id = #{locationId}</if>
+        LIMIT 1
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO material_stock (material_id, location_id, quantity, last_inbound_time)
+        VALUES (#{materialId}, #{locationId}, #{quantity}, #{lastInboundTime})
+    </insert>
+    <update id="updateQuantity">
+        UPDATE material_stock SET quantity = #{quantity}, update_time = NOW() WHERE id = #{id}
+    </update>
+    <update id="increaseStock">
+        UPDATE material_stock SET quantity = quantity + #{quantity}, last_inbound_time = NOW(), update_time = NOW()
+        WHERE material_id = #{materialId} AND location_id = #{locationId}
+    </update>
+    <update id="decreaseStock">
+        UPDATE material_stock SET quantity = quantity - #{quantity}, update_time = NOW()
+        WHERE material_id = #{materialId} AND quantity >= #{quantity}
+    </update>
+</mapper>

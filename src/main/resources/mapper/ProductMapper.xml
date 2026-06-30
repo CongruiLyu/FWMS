@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.ProductMapper">
+    <select id="findAll" resultType="Product">
+        SELECT * FROM product WHERE status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%',#{keyword},'%') OR code LIKE CONCAT('%',#{keyword},'%'))
+        </if>
+        ORDER BY id
+    </select>
+    <select id="findById" resultType="Product">
+        SELECT * FROM product WHERE id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product (code, name, spec, unit, shelf_life_days, alert_threshold, status)
+        VALUES (#{code}, #{name}, #{spec}, #{unit}, #{shelfLifeDays}, #{alertThreshold}, #{status})
+    </insert>
+    <update id="update">
+        UPDATE product SET code=#{code}, name=#{name}, spec=#{spec}, unit=#{unit},
+        shelf_life_days=#{shelfLifeDays}, alert_threshold=#{alertThreshold} WHERE id=#{id}
+    </update>
+    <delete id="deleteById">
+        UPDATE product SET status = 0 WHERE id = #{id}
+    </delete>
+</mapper>

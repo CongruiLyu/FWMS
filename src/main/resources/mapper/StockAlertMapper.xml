@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwms.mapper.StockAlertMapper">
+    <select id="findUnread" resultType="StockAlert">
+        SELECT * FROM stock_alert WHERE is_read = 0 ORDER BY create_time DESC
+    </select>
+    <select id="findAll" resultType="StockAlert">
+        SELECT * FROM stock_alert ORDER BY create_time DESC LIMIT 50
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO stock_alert (type, ref_id, ref_name, current_qty, threshold, message, is_read)
+        VALUES (#{type}, #{refId}, #{refName}, #{currentQty}, #{threshold}, #{message}, #{isRead})
+    </insert>
+    <update id="markRead">
+        UPDATE stock_alert SET is_read = 1 WHERE id = #{id}
+    </update>
+    <update id="markAllRead">
+        UPDATE stock_alert SET is_read = 1 WHERE is_read = 0
+    </update>
+</mapper>
