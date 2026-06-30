@@ -10,6 +10,10 @@ Food Warehouse Management System (FWMS) — 基于 Java Spring Boot + MyBatis + 
 | **李汶慧** | 前端 | `dev-frontend` |
 | **毕梦婷** | 数据库 / 数据层 | `dev-database` |
 
+## 项目仓库
+
+GitHub 地址：https://github.com/CongruiLyu/FWMS
+
 ## 技术栈
 
 | 层次 | 技术 |
@@ -110,7 +114,7 @@ mvn spring-boot:run
     → 客户订单 → 发货出库 → 库存减少
 ```
 
-## 数据库表（14张）
+## 数据库表（17张）
 
 `user`, `supplier`, `material`, `warehouse_location`, `material_stock`, `purchase_order`, `purchase_order_item`, `material_inbound`, `quality_inspection`, `material_outbound`, `product`, `production`, `product_stock`, `customer`, `sales_order`, `shipment`, `stock_alert`
 

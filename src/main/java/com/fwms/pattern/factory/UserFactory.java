@@ -43,8 +43,9 @@ public class UserFactory {
             case "qc":
                 return "QC".equals(role);
             case "production":
-            case "requisition":
                 return "PRODUCTION".equals(role);
+            case "requisition":
+                return "PRODUCTION".equals(role) || "WAREHOUSE".equals(role);
             case "customer":
             case "sales":
                 return "SALES".equals(role);
