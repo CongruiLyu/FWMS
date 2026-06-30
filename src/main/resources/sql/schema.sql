@@ -1,4 +1,5 @@
 -- FWMS 食品仓库管理系统数据库
+-- 说明：共 17 张表，覆盖用户、供应商、原料、采购、入库、质检、领料、生产、成品、销售、发货、库位及库存预警
 SET FOREIGN_KEY_CHECKS = 0;
 CREATE DATABASE IF NOT EXISTS fwms DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE fwms;
