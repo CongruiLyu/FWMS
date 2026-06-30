@@ -21,6 +21,7 @@ body {
 }
 .login-box h1 { text-align: center; color: #1a5276; margin-bottom: 8px; font-size: 22px; }
 .login-box .subtitle { text-align: center; color: #888; margin-bottom: 30px; font-size: 14px; }
+.login-footer { text-align: center; color: #aaa; font-size: 12px; margin: 16px 0 0; }
 .form-group { margin-bottom: 18px; }
 .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
 .form-control {
