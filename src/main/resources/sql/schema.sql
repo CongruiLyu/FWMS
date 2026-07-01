@@ -17,7 +17,7 @@ CREATE TABLE `user` (
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
--- 供应商表
+-- 供应商表（采购模块关联）
 DROP TABLE IF EXISTS `supplier`;
 CREATE TABLE `supplier` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
