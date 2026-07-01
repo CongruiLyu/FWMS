@@ -9,7 +9,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public Result<Void> handleRuntime(RuntimeException e) {
-        return Result.error(e.getMessage());
+        return Result.error(e.getMessage() != null ? e.getMessage() : "操作失败");
     }
 
     @ExceptionHandler(Exception.class)
