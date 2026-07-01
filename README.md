@@ -143,3 +143,9 @@ src/main/resources/
 ├── static/css, js              # 静态资源
 └── templates/                  # 页面模板
 ```
+
+## Git 协作流程
+
+1. 各成员在对应分支开发：`dev-leader` / `dev-frontend` / `dev-database`
+2. 完成后提交 Pull Request 合并至 `main`
+3. 由组长（吕聪睿）Review 并 Merge
