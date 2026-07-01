@@ -2,6 +2,8 @@
 
 Food Warehouse Management System (FWMS) — 基于 Java Spring Boot + MyBatis + MySQL 的软件工程实训项目。
 
+![FWMS 系统首页 - 库存预警与原料库存概览](docs/images/dashboard.png)
+
 ## 团队成员（2301 计本）
 
 | 姓名 | 分工 | GitHub 分支 |
