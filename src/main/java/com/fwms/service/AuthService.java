@@ -12,7 +12,10 @@ public class AuthService {
     private UserMapper userMapper;
 
     public User login(String username, String password) {
-        User user = userMapper.findByUsername(username);
+        if (username == null || password == null) {
+            return null;
+        }
+        User user = userMapper.findByUsername(username.trim());
         if (user != null && user.getPassword().equals(password)) {
             user.setPassword(null);
             return user;
